@@ -1,0 +1,28 @@
+# Ignorar dependências instaladas localmente
+node_modules
+apps/host/node_modules
+apps/transactions/node_modules
+apps/dashboard/node_modules
+packages/ui/node_modules
+
+# Ignorar pastas de build local do Next.js
+.next
+apps/host/.next
+apps/transactions/.next
+apps/dashboard/.next
+out
+build
+
+# Ignorar arquivos do Git e do Editor
+.git
+.gitignore
+.vscode
+.idea
+
+# Ignorar logs e arquivos de debug
+npm-debug.log
+yarn-error.log
+*.log
+
+# Ignorar arquivos de ambiente local (opcional, dependendo de como você injeta as .env)
+.env*.local

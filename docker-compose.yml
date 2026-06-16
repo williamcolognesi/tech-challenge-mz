@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  host:
+    build:
+      context: .
+      dockerfile: ./apps/host/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - TRANSACTIONS_URL=http://transactions:3001
+      - DASHBOARD_URL=http://dashboard:3002
+    depends_on:
+      - transactions
+      - dashboard
+
+  transactions:
+    build:
+      context: .
+      dockerfile: ./apps/transactions/Dockerfile
+    ports:
+      - "3001:3001"
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: ./apps/dashboard/Dockerfile
+    ports:
+      - "3002:3002"

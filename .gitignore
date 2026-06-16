@@ -1,0 +1,6 @@
+# Ignorar dependências instaladas localmente
+node_modules
+apps/host/node_modules
+apps/transactions/node_modules
+apps/dashboard/node_modules
+packages/ui/node_modules
