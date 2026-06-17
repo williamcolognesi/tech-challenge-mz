@@ -1,44 +1,22 @@
-import { DashboardContent } from "../components/dashboard-content"
-import type { ITransaction } from "../model/transaction.types"
-
-interface RevenueVsExpense {
-  month: string
-  receitas: number
-  despesas: number
-}
-
-interface ExpenseCategory {
-  name: string
-  value: number
-  color: string
-}
+import { DashboardContent } from '../components/dashboard-content';
+import { TRANSACTION_DIRECTION } from '@/features/transactions/model/constants';
+import { getBalance } from '@/features/transactions/api/queries/getBalance';
+import { getRecentTransactions } from '@/features/transactions/api/queries/getRecentTransactions';
+import { getRevenueVsExpenses } from '@/features/transactions/api/queries/getRevenueVsExpenses';
+import { getExpensesByCategory } from '@/features/transactions/api/queries/getExpensesByCategory';
+import { getEnums } from '@/features/transactions/api/queries/getEnums';
 
 export default async function DashboardPage() {
-  //const balance = await getBalance()
-  const balance: number = 500
-
-  /* 
-  const income = await getBalance({
-    direcao: TRANSACTION_DIRECTION.ENTRADA.codigo,
-  })
-  */
-  const income: number = 1000
-
-  /* 
-  const expense = await getBalance({
-    direcao: TRANSACTION_DIRECTION.SAIDA.codigo,
-  })
-  */
-  const expense: number = 500
-
-  /* 
-  const recentTransactions = await getRecentTransactions()
-  const revenueVsExpenses = await getRevenueVsExpenses()
-  const expensesByCategory = await getExpensesByCategory()
-  */
-  const recentTransactions: ITransaction[] = []
-  const revenueVsExpenses: RevenueVsExpense[] = []
-  const expensesByCategory: ExpenseCategory[] = []
+  const [balance, income, expense, recentTransactions, revenueVsExpenses, expensesByCategory, enums] =
+    await Promise.all([
+      getBalance(),
+      getBalance({ direcao: TRANSACTION_DIRECTION.ENTRADA.codigo }),
+      getBalance({ direcao: TRANSACTION_DIRECTION.SAIDA.codigo }),
+      getRecentTransactions(),
+      getRevenueVsExpenses(),
+      getExpensesByCategory(),
+      getEnums(),
+    ]);
 
   return (
     <DashboardContent
@@ -48,6 +26,7 @@ export default async function DashboardPage() {
       recentTransactions={recentTransactions}
       revenueVsExpenses={revenueVsExpenses}
       expensesByCategory={expensesByCategory}
+      enums={enums}
     />
-  )
+  );
 }
