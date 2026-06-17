@@ -24,6 +24,9 @@ COPY . .
 # Desativa a telemetria do Next.js durante o build
 ENV NEXT_TELEMETRIA_DISABLED=1
 
+# Define a variável de ambiente para indicar que a aplicação está em um container Docker
+ENV IS_DOCKER=true
+
 # Executa o build focando apenas no workspace do host
 RUN npm run build -w host
 
