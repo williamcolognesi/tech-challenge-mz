@@ -11,6 +11,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const isFormData = init?.body instanceof FormData;
   try {
     const res = await fetch(`${API_URL}${path}`, {
+      cache: 'no-store',
       ...(!isFormData && { headers: { 'Content-Type': 'application/json' } }),
       ...init,
     });

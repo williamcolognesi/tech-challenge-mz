@@ -1,5 +1,10 @@
 version: "3.8"
 
+networks:
+  nobolso-network:
+    name: nobolso-network
+    external: true
+
 services:
   host:
     build:
@@ -10,9 +15,12 @@ services:
     environment:
       - TRANSACTIONS_URL=http://transactions:3001
       - DASHBOARD_URL=http://dashboard:3002
+      - API_URL=http://api:8080/api
     depends_on:
       - transactions
       - dashboard
+    networks:
+      - nobolso-network
 
   transactions:
     build:
@@ -20,6 +28,10 @@ services:
       dockerfile: ./apps/transactions/Dockerfile
     ports:
       - "3001:3001"
+    environment:
+      - API_URL=http://api:8080/api
+    networks:
+      - nobolso-network
 
   dashboard:
     build:
@@ -27,3 +39,7 @@ services:
       dockerfile: ./apps/dashboard/Dockerfile
     ports:
       - "3002:3002"
+    environment:
+      - API_URL=http://api:8080/api
+    networks:
+      - nobolso-network

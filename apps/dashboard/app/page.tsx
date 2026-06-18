@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+
+import { unstable_noStore as noStore } from 'next/cache'
 import { DashboardContent } from '../components/dashboard-content';
 import { TRANSACTION_DIRECTION } from '@/features/transactions/model/constants';
 import { getBalance } from '@/features/transactions/api/queries/getBalance';
@@ -7,6 +10,8 @@ import { getExpensesByCategory } from '@/features/transactions/api/queries/getEx
 import { getEnums } from '@/features/transactions/api/queries/getEnums';
 
 export default async function DashboardPage() {
+  noStore()
+
   const [balance, income, expense, recentTransactions, revenueVsExpenses, expensesByCategory, enums] =
     await Promise.all([
       getBalance(),

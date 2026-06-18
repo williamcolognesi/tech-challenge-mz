@@ -10,6 +10,7 @@ export class ApiUnavailableError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     const res = await fetch(`${API_URL}${path}`, {
+      cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },
       ...init,
     });
