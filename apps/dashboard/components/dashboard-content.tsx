@@ -37,9 +37,10 @@ import {
   Banknote,
   CircleDollarSign,
 } from "lucide-react"
-import { TRANSACTION_TYPE, TRANSACTION_DIRECTION } from "@/model/constants"
+import { TRANSACTION_TYPE, TRANSACTION_DIRECTION } from "@/features/transactions/model/constants"
 import { MOCK_NEWS } from "@/mocks/news/data/news"
-import type { ITransaction } from "@/model/transaction.types"
+import type { ITransaction } from "@/features/transactions/model/transaction.types"
+import type { IEnums } from "@/features/transactions/dto/enums.dto"
 
 interface Props {
   balance: number
@@ -52,15 +53,11 @@ interface Props {
     despesas: number
   }>
   expensesByCategory: Array<{ name: string; value: number; color: string }>
+  enums: IEnums
 }
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
-
-function getTypeName(tipo: number) {
-  const found = Object.values(TRANSACTION_TYPE).find((t) => t.codigo === tipo)
-  return found?.descricao ?? "Outro"
 }
 
 function getTypeIcon(tipo: number) {
@@ -113,7 +110,12 @@ export function DashboardContent({
   recentTransactions,
   revenueVsExpenses,
   expensesByCategory,
+  enums,
 }: Props) {
+  function getTypeName(tipo: number) {
+    return enums.tipos.find((t) => t.codigo === tipo)?.descricao ?? "Outro"
+  }
+
   const absExpense = Math.abs(expense)
 
   return (

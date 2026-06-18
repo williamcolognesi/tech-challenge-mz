@@ -27,12 +27,9 @@ import {
 import {
   TRANSACTION_TYPE,
   TRANSACTION_DIRECTION,
-  TRANSACTION_CATEGORY,
 } from "@/features/transactions/model/constants"
-import type {
-  ITransaction,
-  TransactionCategory,
-} from "@/features/transactions/model/transaction.types"
+import type { ITransaction } from "@/features/transactions/model/transaction.types"
+import type { IEnums } from "@/features/transactions/dto/enums.dto"
 import { calcularSaldo } from "@/features/transactions/utils/calculateBalance"
 import {
   AlertDialog,
@@ -55,23 +52,11 @@ import { EditTransactionDialog } from "./edit-transaction-dialog"
 
 interface Props {
   transactions: ITransaction[]
+  enums: IEnums
 }
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
-
-function getTypeName(tipo: number) {
-  const found = Object.values(TRANSACTION_TYPE).find((t) => t.codigo === tipo)
-  return found?.descricao ?? "Outro"
-}
-
-function getCategoryLabel(categoria: TransactionCategory | undefined) {
-  if (categoria == null) return "Sem categoria"
-  const found = (
-    Object.keys(TRANSACTION_CATEGORY) as (keyof typeof TRANSACTION_CATEGORY)[]
-  ).find((key) => TRANSACTION_CATEGORY[key].codigo === categoria)
-  return found ? TRANSACTION_CATEGORY[found].descricao : "—"
 }
 
 function getTypeIcon(tipo: number) {
@@ -132,7 +117,16 @@ function getMonthOptions() {
   }))
 }
 
-export function TransactionsContent({ transactions }: Props) {
+export function TransactionsContent({ transactions, enums }: Props) {
+  function getTypeName(tipo: number) {
+    return enums.tipos.find((t) => t.codigo === tipo)?.descricao ?? "Outro"
+  }
+
+  function getCategoryLabel(categoria: number | undefined) {
+    if (categoria == null) return "Sem categoria"
+    return enums.categorias.find((c) => c.codigo === categoria)?.descricao ?? "—"
+  }
+
   const router = useRouter()
   const [editingTransaction, setEditingTransaction] =
     useState<ITransaction | null>(null)
@@ -190,7 +184,7 @@ export function TransactionsContent({ transactions }: Props) {
         <div className="flex w-full min-w-0 flex-col gap-3">
           <div className="flex min-w-0 gap-3">
             <div className="min-w-0 flex-1 sm:flex-none">
-              <AddTransactionDialog onCreated={handleMutationDone} />
+              <AddTransactionDialog enums={enums} onCreated={handleMutationDone} />
             </div>
             <Select value={month} onValueChange={setMonth}>
               <SelectTrigger className="h-11 min-h-11 min-w-0 flex-1 data-[size=default]:h-11 sm:h-10 sm:min-h-10 sm:min-w-[160px] sm:w-[180px] sm:flex-none sm:data-[size=default]:h-10">
@@ -213,18 +207,11 @@ export function TransactionsContent({ transactions }: Props) {
             <SelectContent>
               <SelectItem value="all">Todas as categorias</SelectItem>
               <SelectItem value="__none__">Sem categoria</SelectItem>
-              {(
-                Object.keys(
-                  TRANSACTION_CATEGORY,
-                ) as (keyof typeof TRANSACTION_CATEGORY)[]
-              ).map((key) => {
-                const c = TRANSACTION_CATEGORY[key]
-                return (
-                  <SelectItem key={c.codigo} value={String(c.codigo)}>
-                    {c.descricao}
-                  </SelectItem>
-                )
-              })}
+              {enums.categorias.map((c) => (
+                <SelectItem key={c.codigo} value={String(c.codigo)}>
+                  {c.descricao}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -375,6 +362,7 @@ export function TransactionsContent({ transactions }: Props) {
         <EditTransactionDialog
           key={editingTransaction.id}
           transaction={editingTransaction}
+          enums={enums}
           onClose={() => {
             setEditingTransaction(null)
             handleMutationDone()

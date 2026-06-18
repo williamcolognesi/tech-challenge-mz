@@ -44,7 +44,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copia apenas os artefatos necessários gerados no build
-COPY --from=builder /app/apps/host/public ./apps/host/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/host/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/host/.next/static ./apps/host/.next/static
 
