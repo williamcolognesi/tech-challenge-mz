@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import {
+  Download,
   Pencil,
   Trash2,
   Zap,
@@ -44,6 +45,7 @@ import {
 } from "@no-bolso/ui/src/components/alert-dialog"
 import { toast } from "sonner"
 import { deleteTransaction } from "@/features/transactions/api/actions/deleteTransaction"
+import { getComprovanteUrl } from "@/features/transactions/api/queries/getComprovanteUrl"
 
 import { cn } from "@/lib/utils"
 
@@ -305,6 +307,29 @@ export function TransactionsContent({ transactions, enums }: Props) {
                     {formatCurrency(t.valor)}
                   </span>
                   <div className="flex shrink-0 items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      title={t.comprovante ? "Baixar comprovante" : "Sem comprovante"}
+                      type="button"
+                      disabled={!t.comprovante}
+                      asChild={!!t.comprovante}
+                    >
+                      {t.comprovante ? (
+                        <a
+                          href={getComprovanteUrl(t.comprovante.id)}
+                          download={t.comprovante.nome}
+                        >
+                          <Download size={14} aria-hidden />
+                          <span className="sr-only">Baixar comprovante</span>
+                        </a>
+                      ) : (
+                        <>
+                          <Download size={14} aria-hidden />
+                          <span className="sr-only">Sem comprovante</span>
+                        </>
+                      )}
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { formatCurrencyInput, parseCurrencyInput } from "../lib/currency-utils"
 import { startOfLocalDay } from "../lib/transaction-date-input"
+import { ComprovanteInput } from "./comprovante-input"
 
 interface Props {
   enums: IEnums
@@ -53,6 +54,7 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
   const [categoria, setCategoria] = useState("__none__")
   const [dataTransacao, setDataTransacao] = useState(() => startOfLocalDay(new Date()))
   const [dataPopoverOpen, setDataPopoverOpen] = useState(false)
+  const [comprovanteId, setComprovanteId] = useState<number | undefined>()
 
   function handleValorChange(e: React.ChangeEvent<HTMLInputElement>) {
     setValor(formatCurrencyInput(e.target.value))
@@ -71,6 +73,7 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
       dataTransacao,
       categoria: categoria === "__none__" ? undefined : (Number(categoria) as TransactionCategory),
       descricao: descricao || undefined,
+      comprovanteId,
     })
 
     setValor("")
@@ -79,6 +82,7 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
     setTipo(String(TRANSACTION_TYPE.PIX.codigo))
     setDirecao(String(TRANSACTION_DIRECTION.SAIDA.codigo))
     setCategoria("__none__")
+    setComprovanteId(undefined)
     setOpen(false)
     onCreated()
     toast.success("Transação adicionada com sucesso!")
@@ -159,6 +163,8 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
               </SelectContent>
             </Select>
           </div>
+
+          <ComprovanteInput onChange={setComprovanteId} />
 
           <Button type="submit" className="self-center">Adicionar</Button>
         </form>

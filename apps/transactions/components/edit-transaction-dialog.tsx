@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { formatCurrencyInput, parseCurrencyInput } from "../lib/currency-utils"
 import { parseTransactionDate, startOfLocalDay } from "../lib/transaction-date-input"
+import { ComprovanteInput } from "./comprovante-input"
 
 interface Props {
   transaction: ITransaction
@@ -60,6 +61,8 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
     parseTransactionDate(transaction.dataTransacao),
   )
   const [dataPopoverOpen, setDataPopoverOpen] = useState(false)
+  const [comprovanteId, setComprovanteId] = useState<number | undefined>(transaction.comprovante?.id)
+  const handleComprovanteChange = useCallback((id: number | undefined) => setComprovanteId(id), [])
 
   function handleValorChange(e: React.ChangeEvent<HTMLInputElement>) {
     setValor(formatCurrencyInput(e.target.value))
@@ -78,6 +81,7 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
       dataTransacao,
       categoria: categoria === "__none__" ? undefined : (Number(categoria) as TransactionCategory),
       descricao: descricao || undefined,
+      comprovanteId,
     })
 
     onClose()
@@ -154,6 +158,12 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
               </SelectContent>
             </Select>
           </div>
+
+          <ComprovanteInput
+            initialId={transaction.comprovante?.id}
+            initialNome={transaction.comprovante?.nome}
+            onChange={handleComprovanteChange}
+          />
 
           <Button type="submit" className="self-center">Salvar</Button>
         </form>
