@@ -66,7 +66,7 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
     const parsedValor = parseCurrencyInput(valor)
     if (parsedValor <= 0) return
 
-    await createTransaction({
+    const result = await createTransaction({
       valor: parsedValor,
       tipo: Number(tipo) as TransactionType,
       direcao: Number(direcao) as TransactionDirection,
@@ -75,6 +75,11 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
       descricao: descricao || undefined,
       comprovanteId,
     })
+
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
 
     setValor("")
     setDescricao("")

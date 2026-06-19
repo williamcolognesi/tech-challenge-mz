@@ -28,6 +28,7 @@ export default function PrivateLayout({
           <main className="hidden md:block md:ml-60 p-6">{children}</main>
           <main className="md:hidden pt-20 px-4 pb-6">{children}</main>
         </div>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   )
