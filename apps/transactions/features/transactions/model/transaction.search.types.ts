@@ -1,4 +1,5 @@
 import type { TransactionCategory, TransactionDirection, TransactionType } from "./transaction.types";
+import type { IPageParams } from "./page.types";
 
 export interface ITransactionSearch {
   tipo?: TransactionType;
@@ -8,3 +9,5 @@ export interface ITransactionSearch {
   dataInicio?: Date;
   dataFim?: Date;
 }
+
+export interface ITransactionPageParams extends ITransactionSearch, IPageParams {}
