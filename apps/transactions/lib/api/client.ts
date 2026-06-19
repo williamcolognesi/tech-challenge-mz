@@ -9,26 +9,31 @@ export class ApiUnavailableError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const isFormData = init?.body instanceof FormData;
+
+  let res: Response;
   try {
-    const res = await fetch(`${API_URL}${path}`, {
+    res = await fetch(`${API_URL}${path}`, {
       cache: 'no-store',
       ...(!isFormData && { headers: { 'Content-Type': 'application/json' } }),
       ...init,
     });
-
-    if (!res.ok) {
-      const error = await res.text();
-      throw new Error(`API error ${res.status}: ${error}`);
-    }
-
-    if (res.status === 204) return undefined as T;
-    return res.json();
-  } catch (err) {
-    if (err instanceof ApiUnavailableError || err instanceof Error && err.message.startsWith('API error')) {
-      throw err;
-    }
+  } catch {
     throw new ApiUnavailableError();
   }
+
+  if (!res.ok) {
+    const text = await res.text();
+    try {
+      const problem = JSON.parse(text);
+      throw new Error(problem.detail ?? problem.title ?? `Erro ${res.status}`);
+    } catch (parseErr) {
+      if (parseErr instanceof Error) throw parseErr;
+      throw new Error(`Erro ${res.status}`);
+    }
+  }
+
+  if (res.status === 204) return undefined as T;
+  return res.json();
 }
 
 export const api = {

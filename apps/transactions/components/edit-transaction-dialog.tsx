@@ -74,7 +74,7 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
     const parsedValor = parseCurrencyInput(valor)
     if (parsedValor <= 0) return
 
-    await updateTransaction(transaction.id, {
+    const result = await updateTransaction(transaction.id, {
       valor: parsedValor,
       tipo: Number(tipo) as TransactionType,
       direcao: Number(direcao) as TransactionDirection,
@@ -83,6 +83,11 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
       descricao: descricao || undefined,
       comprovanteId,
     })
+
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
 
     onClose()
     toast.success("Transação atualizada com sucesso!")
