@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import {
   Download,
@@ -17,6 +17,7 @@ import {
 
 import { Button } from "@no-bolso/ui/src/components/button"
 import { Avatar, AvatarFallback } from "@no-bolso/ui/src/components/avatar"
+import { Pagination } from "@no-bolso/ui/src/components/pagination"
 import {
   Select,
   SelectContent,
@@ -24,14 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@no-bolso/ui/src/components/select"
-
-import {
-  TRANSACTION_TYPE,
-  TRANSACTION_DIRECTION,
-} from "@/features/transactions/model/constants"
-import type { ITransaction } from "@/features/transactions/model/transaction.types"
-import type { IEnums } from "@/features/transactions/dto/enums.dto"
-import { calcularSaldo } from "@/features/transactions/utils/calculateBalance"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,18 +36,32 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@no-bolso/ui/src/components/alert-dialog"
-import { toast } from "sonner"
+
+import {
+  TRANSACTION_TYPE,
+  TRANSACTION_DIRECTION,
+} from "@/features/transactions/model/constants"
+import type { ITransaction } from "@/features/transactions/model/transaction.types"
+import type { IEnums } from "@/features/transactions/dto/enums.dto"
+import type { IPageResponse } from "@/features/transactions/model/page.types"
 import { deleteTransaction } from "@/features/transactions/api/actions/deleteTransaction"
 import { getComprovanteUrl } from "@/features/transactions/api/queries/getComprovanteUrl"
 
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 import { AddTransactionDialog } from "./add-transaction-dialog"
 import { EditTransactionDialog } from "./edit-transaction-dialog"
 
 interface Props {
-  transactions: ITransaction[]
   enums: IEnums
+  pageData: IPageResponse<ITransaction>
+  saldo: number
+  income: number
+  expense: number
+  currentMonth: string
+  currentCategoria: string
+  currentPage: number
 }
 
 function formatCurrency(value: number) {
@@ -63,55 +70,17 @@ function formatCurrency(value: number) {
 
 function getTypeIcon(tipo: number) {
   switch (tipo) {
-    case TRANSACTION_TYPE.PIX.codigo:
-      return <Zap size={16} />
-    case TRANSACTION_TYPE.DEPOSITO.codigo:
-      return <Landmark size={16} />
-    case TRANSACTION_TYPE.TRANSFERENCIA.codigo:
-      return <ArrowLeftRight size={16} />
-    case TRANSACTION_TYPE.SAQUE.codigo:
-      return <Banknote size={16} />
-    default:
-      return <CircleDollarSign size={16} />
+    case TRANSACTION_TYPE.PIX.codigo: return <Zap size={16} />
+    case TRANSACTION_TYPE.DEPOSITO.codigo: return <Landmark size={16} />
+    case TRANSACTION_TYPE.TRANSFERENCIA.codigo: return <ArrowLeftRight size={16} />
+    case TRANSACTION_TYPE.SAQUE.codigo: return <Banknote size={16} />
+    default: return <CircleDollarSign size={16} />
   }
-}
-
-function groupByDay(transactions: ITransaction[]) {
-  const groups: Record<string, ITransaction[]> = {}
-
-  const sorted = [...transactions].sort(
-    (a, b) =>
-      new Date(b.dataTransacao).getTime() - new Date(a.dataTransacao).getTime(),
-  )
-
-  for (const t of sorted) {
-    const date = new Date(t.dataTransacao)
-    const key = date.toLocaleDateString("pt-BR", {
-      weekday: "long",
-      day: "numeric",
-    })
-    if (!groups[key]) groups[key] = []
-    groups[key].push(t)
-  }
-
-  return groups
 }
 
 function getMonthOptions() {
-  const months = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ]
+  const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
   const year = new Date().getFullYear()
   return months.map((m, i) => ({
     label: `${m}, ${year}`,
@@ -119,7 +88,45 @@ function getMonthOptions() {
   }))
 }
 
-export function TransactionsContent({ transactions, enums }: Props) {
+function groupByDay(transactions: ITransaction[]) {
+  const groups: Record<string, ITransaction[]> = {}
+  for (const t of transactions) {
+    const date = new Date(t.dataTransacao)
+    const key = date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric" })
+    if (!groups[key]) groups[key] = []
+    groups[key].push(t)
+  }
+  return groups
+}
+
+export function TransactionsContent({
+  enums,
+  pageData,
+  saldo,
+  income,
+  expense,
+  currentMonth,
+  currentCategoria,
+  currentPage,
+}: Props) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [editingTransaction, setEditingTransaction] = useState<ITransaction | null>(null)
+
+  function navigate(month: string, categoria: string, page: number) {
+    const params = new URLSearchParams()
+    params.set("month", month)
+    if (categoria !== "all") params.set("categoria", categoria)
+    params.set("page", String(page))
+    startTransition(() => {
+      router.replace(`?${params.toString()}`)
+    })
+  }
+
+  function handleMonthChange(m: string) { navigate(m, currentCategoria, 1) }
+  function handleCategoryChange(cat: string) { navigate(currentMonth, cat, 1) }
+  function handlePageChange(p: number) { navigate(currentMonth, currentCategoria, p) }
+
   function getTypeName(tipo: number) {
     return enums.tipos.find((t) => t.codigo === tipo)?.descricao ?? "Outro"
   }
@@ -128,47 +135,6 @@ export function TransactionsContent({ transactions, enums }: Props) {
     if (categoria == null) return "Sem categoria"
     return enums.categorias.find((c) => c.codigo === categoria)?.descricao ?? "—"
   }
-
-  const router = useRouter()
-  const [editingTransaction, setEditingTransaction] =
-    useState<ITransaction | null>(null)
-  const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`
-  const [month, setMonth] = useState(currentMonth)
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
-
-  const filteredByMonth = transactions.filter((t) => {
-    const d = new Date(t.dataTransacao)
-    const tMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
-    return tMonth === month
-  })
-
-  const filtered = filteredByMonth.filter((t) => {
-    if (categoryFilter === "all") return true
-    if (categoryFilter === "__none__") return t.categoria == null
-    return t.categoria === Number(categoryFilter)
-  })
-
-  let income = 0
-  let expenseAbs = 0
-  for (const t of filtered) {
-    if (t.direcao === TRANSACTION_DIRECTION.ENTRADA.codigo) {
-      income += t.valor
-    } else {
-      expenseAbs += Math.abs(t.valor)
-    }
-  }
-  const balance = calcularSaldo(filtered)
-
-  const groups = groupByDay(filtered)
-
-  /** Última transação exibida (global) não leva linha inferior. */
-  const isLastTxInGlobalList = useMemo(() => {
-    const ids = Object.entries(groups).flatMap(([, items]) =>
-      items.map((t) => t.id),
-    )
-    const lastId = ids[ids.length - 1]
-    return new Map(ids.map((id) => [id, id === lastId] as const))
-  }, [groups])
 
   async function handleDelete(id: number) {
     await deleteTransaction(id)
@@ -180,6 +146,14 @@ export function TransactionsContent({ transactions, enums }: Props) {
     router.refresh()
   }
 
+  const groups = groupByDay(pageData.content)
+
+  const isLastTxInGlobalList = useMemo(() => {
+    const ids = Object.entries(groups).flatMap(([, items]) => items.map((t) => t.id))
+    const lastId = ids[ids.length - 1]
+    return new Map(ids.map((id) => [id, id === lastId] as const))
+  }, [groups])
+
   return (
     <div className="flex min-h-screen w-full flex-col gap-6 px-4 py-6 sm:gap-8 sm:p-6 md:p-8">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
@@ -188,21 +162,19 @@ export function TransactionsContent({ transactions, enums }: Props) {
             <div className="min-w-0 flex-1 sm:flex-none">
               <AddTransactionDialog enums={enums} onCreated={handleMutationDone} />
             </div>
-            <Select value={month} onValueChange={setMonth}>
+            <Select value={currentMonth} onValueChange={handleMonthChange}>
               <SelectTrigger className="h-11 min-h-11 min-w-0 flex-1 data-[size=default]:h-11 sm:h-10 sm:min-h-10 sm:min-w-[160px] sm:w-[180px] sm:flex-none sm:data-[size=default]:h-10">
                 <SelectValue placeholder="Mês" />
               </SelectTrigger>
               <SelectContent>
                 {getMonthOptions().map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <Select value={currentCategoria} onValueChange={handleCategoryChange}>
             <SelectTrigger className="h-11 min-h-11 w-full min-w-0 data-[size=default]:h-11 sm:h-10 sm:min-h-10 sm:min-w-[200px] sm:flex-1 sm:max-w-[320px] sm:data-[size=default]:h-10">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
@@ -210,40 +182,27 @@ export function TransactionsContent({ transactions, enums }: Props) {
               <SelectItem value="all">Todas as categorias</SelectItem>
               <SelectItem value="__none__">Sem categoria</SelectItem>
               {enums.categorias.map((c) => (
-                <SelectItem key={c.codigo} value={String(c.codigo)}>
-                  {c.descricao}
-                </SelectItem>
+                <SelectItem key={c.codigo} value={String(c.codigo)}>{c.descricao}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex flex-col gap-1.5 text-center sm:text-left lg:shrink-0 lg:text-right">
-          <div
-            className={cn(
-              "text-lg font-bold sm:text-xl",
-              balance < 0 ? "text-red-600" : "text-green-600",
-            )}
-          >
-            Balanço: {formatCurrency(balance)}
+          <div className={cn("text-lg font-bold sm:text-xl", saldo < 0 ? "text-red-600" : "text-green-600")}>
+            Balanço: {formatCurrency(saldo)}
           </div>
           <div className="text-[13px] text-[#555]">
-            Entradas:{" "}
-            <span className="font-semibold text-green-600">
-              {formatCurrency(income)}
-            </span>
+            Entradas: <span className="font-semibold text-green-600">{formatCurrency(income)}</span>
           </div>
           <div className="text-[13px] text-[#555]">
-            Saídas:{" "}
-            <span className="font-semibold text-red-600">
-              {formatCurrency(expenseAbs)}
-            </span>
+            Saídas: <span className="font-semibold text-red-600">{formatCurrency(expense)}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white px-4 py-5 sm:gap-6 sm:p-6">
-        {Object.keys(groups).length === 0 && (
+      <div className={cn("flex flex-col gap-4 rounded-xl border border-gray-200 bg-white px-4 py-5 sm:gap-6 sm:p-6", isPending && "opacity-60 pointer-events-none")}>
+        {pageData.content.length === 0 && !isPending && (
           <p className="px-2 py-6 text-center text-gray-500 sm:px-0">
             Nenhuma transação neste período.
           </p>
@@ -274,23 +233,15 @@ export function TransactionsContent({ transactions, enums }: Props) {
                       <strong className="text-sm font-semibold text-neutral-900">
                         {getTypeName(t.tipo)}
                       </strong>
-                      <span
-                        className={cn(
-                          "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
-                          t.direcao === TRANSACTION_DIRECTION.ENTRADA.codigo
-                            ? "!bg-green-100 !text-green-600"
-                            : "!bg-red-100 !text-red-600",
-                        )}
-                      >
-                        {t.direcao === TRANSACTION_DIRECTION.ENTRADA.codigo ? (
-                          <>
-                            <TrendingUp size={12} /> Entrada
-                          </>
-                        ) : (
-                          <>
-                            <TrendingDown size={12} /> Saída
-                          </>
-                        )}
+                      <span className={cn(
+                        "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
+                        t.direcao === TRANSACTION_DIRECTION.ENTRADA.codigo
+                          ? "!bg-green-100 !text-green-600"
+                          : "!bg-red-100 !text-red-600",
+                      )}>
+                        {t.direcao === TRANSACTION_DIRECTION.ENTRADA.codigo
+                          ? <><TrendingUp size={12} /> Entrada</>
+                          : <><TrendingDown size={12} /> Saída</>}
                       </span>
                     </div>
                     <span className="truncate text-[11px] font-medium uppercase tracking-wide text-gray-400">
@@ -316,10 +267,7 @@ export function TransactionsContent({ transactions, enums }: Props) {
                       asChild={!!t.comprovante}
                     >
                       {t.comprovante ? (
-                        <a
-                          href={getComprovanteUrl(t.comprovante.id)}
-                          download={t.comprovante.nome}
-                        >
+                        <a href={getComprovanteUrl(t.comprovante.id)} download={t.comprovante.nome}>
                           <Download size={14} aria-hidden />
                           <span className="sr-only">Baixar comprovante</span>
                         </a>
@@ -343,12 +291,7 @@ export function TransactionsContent({ transactions, enums }: Props) {
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="icon-sm"
-                          title="Excluir"
-                          type="button"
-                        >
+                        <Button variant="destructive" size="icon-sm" title="Excluir" type="button">
                           <Trash2 size={14} aria-hidden />
                           <span className="sr-only">Excluir</span>
                         </Button>
@@ -357,14 +300,11 @@ export function TransactionsContent({ transactions, enums }: Props) {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Excluir transação</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Tem certeza que deseja excluir esta transação? Essa
-                            ação não pode ser desfeita.
+                            Tem certeza que deseja excluir esta transação? Essa ação não pode ser desfeita.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
-                          <AlertDialogCancel className="mt-0 w-full sm:w-auto">
-                            Cancelar
-                          </AlertDialogCancel>
+                          <AlertDialogCancel className="mt-0 w-full sm:w-auto">Cancelar</AlertDialogCancel>
                           <AlertDialogAction
                             variant="destructive"
                             className="w-full sm:w-auto"
@@ -381,6 +321,15 @@ export function TransactionsContent({ transactions, enums }: Props) {
             ))}
           </div>
         ))}
+
+        {pageData.totalPages > 1 && (
+          <Pagination
+            page={currentPage}
+            totalPages={pageData.totalPages}
+            onPageChange={handlePageChange}
+            className="pt-2"
+          />
+        )}
       </div>
 
       {editingTransaction && (
