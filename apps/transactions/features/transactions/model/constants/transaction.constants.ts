@@ -12,11 +12,15 @@ export const TRANSACTION_DIRECTION = {
 } as const
 
 export const TRANSACTION_CATEGORY = {
-  ALIMENTACAO:    { codigo: 1 },
-  LAZER:          { codigo: 2 },
-  ASSINATURA:     { codigo: 3 },
-  CASA:           { codigo: 4 },
-  EDUCACAO:       { codigo: 5 },
-  RECEITAS_FIXAS: { codigo: 6 },
-  OUTROS:         { codigo: 7 },
+  ALIMENTACAO:       { codigo: 1 },
+  LAZER:             { codigo: 2 },
+  ASSINATURA:        { codigo: 3 },
+  CASA:              { codigo: 4 },
+  EDUCACAO:          { codigo: 5 },
+  RECEITAS_FIXAS:    { codigo: 6 },
+  OUTROS:            { codigo: 7 },
+  SAUDE:             { codigo: 8 },
+  TRANSPORTE:        { codigo: 9 },
+  RECEITAS_VARIAVEIS:{ codigo: 10 },
+  VIAGEM:            { codigo: 11 },
 } as const

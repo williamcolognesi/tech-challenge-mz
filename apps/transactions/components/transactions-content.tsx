@@ -18,6 +18,7 @@ import {
 import { Button } from "@no-bolso/ui/src/components/button"
 import { Avatar, AvatarFallback } from "@no-bolso/ui/src/components/avatar"
 import { Pagination } from "@no-bolso/ui/src/components/pagination"
+import { MonthPicker } from "@no-bolso/ui/src/components/month-picker"
 import {
   Select,
   SelectContent,
@@ -78,15 +79,6 @@ function getTypeIcon(tipo: number) {
   }
 }
 
-function getMonthOptions() {
-  const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-  const year = new Date().getFullYear()
-  return months.map((m, i) => ({
-    label: `${m}, ${year}`,
-    value: `${year}-${String(i + 1).padStart(2, "0")}`,
-  }))
-}
 
 function groupByDay(transactions: ITransaction[]) {
   const groups: Record<string, ITransaction[]> = {}
@@ -162,20 +154,11 @@ export function TransactionsContent({
             <div className="min-w-0 flex-1 sm:flex-none">
               <AddTransactionDialog enums={enums} onCreated={handleMutationDone} />
             </div>
-            <Select value={currentMonth} onValueChange={handleMonthChange}>
-              <SelectTrigger className="h-11 min-h-11 min-w-0 flex-1 data-[size=default]:h-11 sm:h-10 sm:min-h-10 sm:min-w-[160px] sm:w-[180px] sm:flex-none sm:data-[size=default]:h-10">
-                <SelectValue placeholder="Mês" />
-              </SelectTrigger>
-              <SelectContent>
-                {getMonthOptions().map((o) => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MonthPicker value={currentMonth} onChange={handleMonthChange} maxYearsBack={5} />
           </div>
 
           <Select value={currentCategoria} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="h-11 min-h-11 w-full min-w-0 data-[size=default]:h-11 sm:h-10 sm:min-h-10 sm:min-w-[200px] sm:flex-1 sm:max-w-[320px] sm:data-[size=default]:h-10">
+            <SelectTrigger className="h-11 min-h-11 w-full min-w-0 data-[size=default]:h-11 sm:h-10 sm:min-h-10 sm:min-w-[200px] sm:flex-1 sm:max-w-[332px] sm:data-[size=default]:h-10">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent>
