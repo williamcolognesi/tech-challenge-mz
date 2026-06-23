@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import {
   Card,
   CardContent,
@@ -7,6 +8,7 @@ import {
   CardTitle,
 } from "@no-bolso/ui/src/components/card"
 import { Badge } from "@no-bolso/ui/src/components/badge"
+import { Button } from "@no-bolso/ui/src/components/button"
 import {
   Table,
   TableBody,
@@ -36,6 +38,9 @@ import {
   ArrowLeftRight,
   Banknote,
   CircleDollarSign,
+  DollarSign,
+  Hash,
+  Percent,
 } from "lucide-react"
 import { TRANSACTION_TYPE, TRANSACTION_DIRECTION } from "@/features/transactions/model/constants"
 import { MOCK_NEWS } from "@/mocks/news/data/news"
@@ -52,7 +57,7 @@ interface Props {
     receitas: number
     despesas: number
   }>
-  expensesByCategory: Array<{ name: string; value: number; color: string }>
+  expensesByCategory: Array<{ name: string; value: number; count: number; color: string }>
   enums: IEnums
 }
 
@@ -103,6 +108,10 @@ function StatCard({
   )
 }
 
+type ViewMode = "valor" | "quantidade" | "percentual"
+
+type ChartItem = { name: string; value: number; count: number; percent: number }
+
 export function DashboardContent({
   balance,
   income,
@@ -112,11 +121,34 @@ export function DashboardContent({
   expensesByCategory,
   enums,
 }: Props) {
+  const [viewMode, setViewMode] = useState<ViewMode>("valor")
+
   function getTypeName(tipo: number) {
     return enums.tipos.find((t) => t.codigo === tipo)?.descricao ?? "Outro"
   }
 
   const absExpense = Math.abs(expense)
+
+  const total = useMemo(
+    () => expensesByCategory.reduce((sum, c) => sum + c.value, 0),
+    [expensesByCategory]
+  )
+
+  const chartData = useMemo(
+    () =>
+      expensesByCategory.map((c) => ({
+        ...c,
+        chartValue: viewMode === "quantidade" ? c.count : c.value,
+        percent: total > 0 ? (c.value / total) * 100 : 0,
+      })),
+    [expensesByCategory, viewMode, total]
+  )
+
+  function formatItemValue(item: { value: number; count: number; percent: number }) {
+    if (viewMode === "quantidade") return `${item.count} transação(ões)`
+    if (viewMode === "percentual") return `${item.percent.toFixed(1)}%`
+    return formatCurrency(item.value)
+  }
 
   return (
     <div className="space-y-6">
@@ -253,13 +285,34 @@ export function DashboardContent({
           </Card>
 
           <Card className="rounded-xl shadow-sm border border-gray-200">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base font-semibold">
                 Despesas por Categoria
               </CardTitle>
+              <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-0.5">
+                {(
+                  [
+                    { mode: "valor", icon: <DollarSign size={14} />, label: "Valor" },
+                    { mode: "quantidade", icon: <Hash size={14} />, label: "Quantidade" },
+                    { mode: "percentual", icon: <Percent size={14} />, label: "Percentual" },
+                  ] as const
+                ).map(({ mode, icon, label }) => (
+                  <Button
+                    key={mode}
+                    type="button"
+                    variant={viewMode === mode ? "default" : "ghost"}
+                    size="icon-sm"
+                    title={label}
+                    onClick={() => setViewMode(mode)}
+                    className="size-7"
+                  >
+                    {icon}
+                  </Button>
+                ))}
+              </div>
             </CardHeader>
             <CardContent>
-              {expensesByCategory.length === 0 ? (
+              {chartData.length === 0 ? (
                 <div className="flex items-center justify-center h-[200px] text-gray-500">
                   Nenhuma despesa cadastrada
                 </div>
@@ -267,19 +320,30 @@ export function DashboardContent({
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
-                      data={expensesByCategory}
+                      data={chartData}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
                       outerRadius={80}
                       paddingAngle={2}
-                      dataKey="value"
+                      dataKey="chartValue"
                     >
-                      {expensesByCategory.map((entry, index) => (
+                      {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `R$ ${value}`} />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null
+                        const item = payload[0].payload as ChartItem
+                        return (
+                          <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm">
+                            <p className="font-semibold text-gray-900">{item.name}</p>
+                            <p className="text-gray-600">{formatItemValue(item)}</p>
+                          </div>
+                        )
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               )}
