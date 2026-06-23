@@ -37,6 +37,7 @@ import { toast } from "sonner"
 import { formatCurrencyInput, parseCurrencyInput } from "../lib/currency-utils"
 import { parseTransactionDate, startOfLocalDay } from "../lib/transaction-date-input"
 import { ComprovanteInput } from "./comprovante-input"
+import { CategorySuggestionHint } from "./category-suggestion-hint"
 
 interface Props {
   transaction: ITransaction
@@ -153,6 +154,12 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
 
           <div className="flex flex-col gap-1.5">
             <Label className="text-sm font-semibold text-neutral-900">Categoria</Label>
+            <CategorySuggestionHint
+              descricao={descricao}
+              categoria={categoria}
+              enums={enums}
+              onApply={setCategoria}
+            />
             <Select value={categoria} onValueChange={setCategoria}>
               <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
               <SelectContent>
