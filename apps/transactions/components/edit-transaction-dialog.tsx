@@ -38,6 +38,7 @@ import { formatCurrencyInput, parseCurrencyInput } from "../lib/currency-utils"
 import { parseTransactionDate, startOfLocalDay } from "../lib/transaction-date-input"
 import { ComprovanteInput } from "./comprovante-input"
 import { CategorySuggestionHint } from "./category-suggestion-hint"
+import { DirectionSuggestionHint } from "./direction-suggestion-hint"
 
 interface Props {
   transaction: ITransaction
@@ -129,30 +130,6 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label className="text-sm font-semibold text-neutral-900">Tipo</Label>
-            <Select value={tipo} onValueChange={setTipo}>
-              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {enums.tipos.map((t) => (
-                  <SelectItem key={t.codigo} value={String(t.codigo)}>{t.descricao}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-sm font-semibold text-neutral-900">Direção</Label>
-            <Select value={direcao} onValueChange={setDirecao}>
-              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {enums.direcoes.map((d) => (
-                  <SelectItem key={d.codigo} value={String(d.codigo)}>{d.descricao}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
             <Label className="text-sm font-semibold text-neutral-900">Categoria</Label>
             <CategorySuggestionHint
               descricao={descricao}
@@ -166,6 +143,36 @@ export function EditTransactionDialog({ transaction, enums, onClose }: Props) {
                 <SelectItem value="__none__">Sem categoria</SelectItem>
                 {enums.categorias.map((c) => (
                   <SelectItem key={c.codigo} value={String(c.codigo)}>{c.descricao}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm font-semibold text-neutral-900">Direção</Label>
+            <DirectionSuggestionHint
+              categoria={categoria}
+              direcao={direcao}
+              enums={enums}
+              onApply={setDirecao}
+            />
+            <Select value={direcao} onValueChange={setDirecao}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {enums.direcoes.map((d) => (
+                  <SelectItem key={d.codigo} value={String(d.codigo)}>{d.descricao}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm font-semibold text-neutral-900">Tipo</Label>
+            <Select value={tipo} onValueChange={setTipo}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {enums.tipos.map((t) => (
+                  <SelectItem key={t.codigo} value={String(t.codigo)}>{t.descricao}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
