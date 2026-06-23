@@ -39,6 +39,7 @@ import { toast } from "sonner"
 import { formatCurrencyInput, parseCurrencyInput } from "../lib/currency-utils"
 import { startOfLocalDay } from "../lib/transaction-date-input"
 import { ComprovanteInput } from "./comprovante-input"
+import { CategorySuggestionHint } from "./category-suggestion-hint"
 
 interface Props {
   enums: IEnums
@@ -55,6 +56,17 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
   const [dataTransacao, setDataTransacao] = useState(() => startOfLocalDay(new Date()))
   const [dataPopoverOpen, setDataPopoverOpen] = useState(false)
   const [comprovanteId, setComprovanteId] = useState<number | undefined>()
+
+  function resetForm() {
+    setDataPopoverOpen(false)
+    setValor("")
+    setDescricao("")
+    setTipo(String(TRANSACTION_TYPE.PIX.codigo))
+    setDirecao(String(TRANSACTION_DIRECTION.SAIDA.codigo))
+    setCategoria("__none__")
+    setDataTransacao(startOfLocalDay(new Date()))
+    setComprovanteId(undefined)
+  }
 
   function handleValorChange(e: React.ChangeEvent<HTMLInputElement>) {
     setValor(formatCurrencyInput(e.target.value))
@@ -81,20 +93,17 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
       return
     }
 
-    setValor("")
-    setDescricao("")
-    setDataTransacao(startOfLocalDay(new Date()))
-    setTipo(String(TRANSACTION_TYPE.PIX.codigo))
-    setDirecao(String(TRANSACTION_DIRECTION.SAIDA.codigo))
-    setCategoria("__none__")
-    setComprovanteId(undefined)
+    resetForm()
     setOpen(false)
     onCreated()
     toast.success("Transação adicionada com sucesso!")
   }
 
   return (
-    <Dialog open={open} onOpenChange={(next) => { setOpen(next); if (!next) setDataPopoverOpen(false) }}>
+    <Dialog open={open} onOpenChange={(next) => {
+      setOpen(next)
+      if (!next) resetForm()
+    }}>
       <DialogTrigger asChild>
         <Button type="button" className="h-11 w-full sm:h-10 sm:w-auto">
           Adicionar item
@@ -158,6 +167,12 @@ export function AddTransactionDialog({ enums, onCreated }: Props) {
 
           <div className="flex flex-col gap-1.5">
             <Label className="text-sm font-semibold text-neutral-900">Categoria</Label>
+            <CategorySuggestionHint
+              descricao={descricao}
+              categoria={categoria}
+              enums={enums}
+              onApply={setCategoria}
+            />
             <Select value={categoria} onValueChange={setCategoria}>
               <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
               <SelectContent>
