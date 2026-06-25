@@ -18,6 +18,8 @@ interface SearchParams {
   page?: string
 }
 
+import { StoreProvider } from '@/lib/store/StoreProvider'
+
 export default async function TransactionsPage({
   searchParams,
 }: {
@@ -41,15 +43,17 @@ export default async function TransactionsPage({
   ])
 
   return (
-    <TransactionsContent
-      enums={enums}
+    <StoreProvider
       pageData={result.page}
       saldo={result.saldo}
       income={result.income}
       expense={result.expense}
+      enums={enums}
       currentMonth={month}
       currentCategoria={categoriaParam}
       currentPage={page}
-    />
+    >
+      <TransactionsContent />
+    </StoreProvider>
   )
 }

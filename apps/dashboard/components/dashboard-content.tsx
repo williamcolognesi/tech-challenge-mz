@@ -44,22 +44,17 @@ import {
 } from "lucide-react"
 import { TRANSACTION_TYPE, TRANSACTION_DIRECTION } from "@/features/transactions/model/constants"
 import { MOCK_NEWS } from "@/mocks/news/data/news"
-import type { ITransaction } from "@/features/transactions/model/transaction.types"
-import type { IEnums } from "@/features/transactions/dto/enums.dto"
 
-interface Props {
-  balance: number
-  income: number
-  expense: number
-  recentTransactions: ITransaction[]
-  revenueVsExpenses: Array<{
-    month: string
-    receitas: number
-    despesas: number
-  }>
-  expensesByCategory: Array<{ name: string; value: number; count: number; color: string }>
-  enums: IEnums
-}
+import { useAppSelector } from "@/lib/store/hooks"
+import {
+  selectBalance,
+  selectIncome,
+  selectExpense,
+  selectRecentTransactions,
+  selectRevenueVsExpenses,
+  selectExpensesByCategory,
+  selectEnums,
+} from "@/lib/store/slices/dashboardSlice"
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -112,15 +107,14 @@ type ViewMode = "valor" | "quantidade" | "percentual"
 
 type ChartItem = { name: string; value: number; count: number; percent: number }
 
-export function DashboardContent({
-  balance,
-  income,
-  expense,
-  recentTransactions,
-  revenueVsExpenses,
-  expensesByCategory,
-  enums,
-}: Props) {
+export function DashboardContent() {
+  const balance = useAppSelector(selectBalance)
+  const income = useAppSelector(selectIncome)
+  const expense = useAppSelector(selectExpense)
+  const recentTransactions = useAppSelector(selectRecentTransactions)
+  const revenueVsExpenses = useAppSelector(selectRevenueVsExpenses)
+  const expensesByCategory = useAppSelector(selectExpensesByCategory)
+  const enums = useAppSelector(selectEnums)!
   const [viewMode, setViewMode] = useState<ViewMode>("valor")
 
   function getTypeName(tipo: number) {
