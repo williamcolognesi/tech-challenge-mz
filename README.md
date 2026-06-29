@@ -59,7 +59,7 @@ docker compose up -d
 docker compose down
 ```
 
-> O frontend e o backend ([no-bolso-api](https://github.com/queity-ss/no-bolso-api)) compartilham a rede `nobolso-network`. Cada projeto cria a rede automaticamente se ela não existir, portanto não há ordem obrigatória para subir os projetos.
+> O frontend e o backend ([no-bolso-api](https://github.com/queity/no-bolso-api)) compartilham a rede `nobolso-network`. Cada projeto cria a rede automaticamente se ela não existir, portanto não há ordem obrigatória para subir os projetos.
 
 ---
 
