@@ -13,7 +13,6 @@ import {
   CircleDollarSign,
   TrendingUp,
   TrendingDown,
-  Wallet,
 } from "lucide-react"
 
 import { Button } from "@no-bolso/ui/src/components/button"
@@ -59,7 +58,6 @@ interface Props {
   enums: IEnums
   pageData: IPageResponse<ITransaction>
   saldo: number
-  balanco: number
   income: number
   expense: number
   currentMonth: string
@@ -97,7 +95,6 @@ export function TransactionsContent({
   enums,
   pageData,
   saldo,
-  balanco,
   income,
   expense,
   currentMonth,
@@ -151,19 +148,6 @@ export function TransactionsContent({
 
   return (
     <div className="flex min-h-screen w-full flex-col gap-6 px-4 py-6 sm:gap-8 sm:p-6 md:p-8">
-      {/* Card de saldo acumulado */}
-      <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-gray-100">
-          <Wallet className="size-5 text-gray-600" />
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-medium uppercase tracking-wide text-gray-400">Saldo do mês</span>
-          <span className={cn("text-2xl font-bold tabular-nums", saldo < 0 ? "text-red-600" : "text-green-600")}>
-            {formatCurrency(saldo)}
-          </span>
-        </div>
-      </div>
-
       {/* Filtros */}
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
         <div className="flex w-full min-w-0 flex-col gap-3">
@@ -188,8 +172,8 @@ export function TransactionsContent({
         </div>
 
         <div className="flex flex-col gap-1.5 text-center sm:text-left lg:shrink-0 lg:text-right">
-          <div className={cn("text-lg font-bold sm:text-xl", balanco < 0 ? "text-red-600" : "text-green-600")}>
-            Balanço: {formatCurrency(balanco)}
+          <div className={cn("text-lg font-bold sm:text-xl", saldo < 0 ? "text-red-600" : "text-green-600")}>
+            Saldo do mês: {formatCurrency(saldo)}
           </div>
           <div className="text-[13px] text-[#555]">
             Entradas: <span className="font-semibold text-green-600">{formatCurrency(income)}</span>

@@ -34,12 +34,11 @@ export async function getBalanceSummary(
   semCategoria?: boolean,
 ) {
   const monthFilters = { dataInicio, dataFim, categoria, semCategoria };
-  const [saldo, balanco, income, expense] = await Promise.all([
+  const [saldo, income, expense] = await Promise.all([
     // saldo acumulado até o fim do mês selecionado (sem dataInicio e sem filtros de categoria)
     getBalance({ dataFim }),
-    getBalance(monthFilters),
     getBalance({ ...monthFilters, direcao: TRANSACTION_DIRECTION.ENTRADA.codigo }),
     getBalance({ ...monthFilters, direcao: TRANSACTION_DIRECTION.SAIDA.codigo }),
   ]);
-  return { saldo, balanco, income, expense };
+  return { saldo, income, expense };
 }
