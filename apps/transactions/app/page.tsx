@@ -45,6 +45,7 @@ export default async function TransactionsPage({
       enums={enums}
       pageData={result.page}
       saldo={result.saldo}
+      balanco={result.balanco}
       income={result.income}
       expense={result.expense}
       currentMonth={month}

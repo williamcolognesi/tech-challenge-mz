@@ -14,6 +14,7 @@ export interface FetchTransactionsPageParams {
 export interface FetchTransactionsPageResult {
   page: IPageResponse<ITransaction>;
   saldo: number;
+  balanco: number;
   income: number;
   expense: number;
 }
