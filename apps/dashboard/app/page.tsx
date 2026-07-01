@@ -9,6 +9,8 @@ import { getRevenueVsExpenses } from '@/features/transactions/api/queries/getRev
 import { getExpensesByCategory } from '@/features/transactions/api/queries/getExpensesByCategory';
 import { getEnums } from '@/features/transactions/api/queries/getEnums';
 
+import { StoreProvider } from '@/lib/store/StoreProvider';
+
 export default async function DashboardPage() {
   noStore()
 
@@ -24,7 +26,7 @@ export default async function DashboardPage() {
     ]);
 
   return (
-    <DashboardContent
+    <StoreProvider
       balance={balance}
       income={income}
       expense={expense}
@@ -32,6 +34,8 @@ export default async function DashboardPage() {
       revenueVsExpenses={revenueVsExpenses}
       expensesByCategory={expensesByCategory}
       enums={enums}
-    />
+    >
+      <DashboardContent />
+    </StoreProvider>
   );
 }

@@ -54,16 +54,14 @@ import { cn } from "@/lib/utils"
 import { AddTransactionDialog } from "./add-transaction-dialog"
 import { EditTransactionDialog } from "./edit-transaction-dialog"
 
-interface Props {
-  enums: IEnums
-  pageData: IPageResponse<ITransaction>
-  saldo: number
-  income: number
-  expense: number
-  currentMonth: string
-  currentCategoria: string
-  currentPage: number
-}
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
+import {
+  selectTransactions,
+  selectBalance,
+  selectEnums,
+  selectFilters,
+  removeTransaction,
+} from "@/lib/store/slices/transactionsSlice"
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -91,19 +89,16 @@ function groupByDay(transactions: ITransaction[]) {
   return groups
 }
 
-export function TransactionsContent({
-  enums,
-  pageData,
-  saldo,
-  income,
-  expense,
-  currentMonth,
-  currentCategoria,
-  currentPage,
-}: Props) {
+export function TransactionsContent() {
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [editingTransaction, setEditingTransaction] = useState<ITransaction | null>(null)
+
+  const pageData = useAppSelector(selectTransactions)!
+  const { saldo, income, expense } = useAppSelector(selectBalance)
+  const enums = useAppSelector(selectEnums)!
+  const { currentMonth, currentCategoria, currentPage } = useAppSelector(selectFilters)
 
   function navigate(month: string, categoria: string, page: number) {
     const params = new URLSearchParams()
@@ -130,6 +125,7 @@ export function TransactionsContent({
 
   async function handleDelete(id: number) {
     await deleteTransaction(id)
+    dispatch(removeTransaction(id))
     router.refresh()
     toast.success("Transação excluída com sucesso!")
   }
