@@ -62,7 +62,17 @@ docker compose down
 > O frontend e o backend ([no-bolso-api](https://github.com/queity/no-bolso-api)) compartilham a rede `nobolso-network`. Cada projeto cria a rede automaticamente se ela não existir, portanto não há ordem obrigatória para subir os projetos.
 
 ---
+## 🎨 Storybook (Design System)
 
+O projeto possui o **Storybook** configurado no pacote `packages/ui` para documentação e desenvolvimento isolado dos componentes visuais do nosso Design System.
+
+Para executá-lo localmente e visualizar o catálogo de componentes, execute o seguinte comando na raiz do projeto:
+
+```bash
+npm run storybook -w @no-bolso/ui
+```
+
+---
 ## Variáveis de ambiente
 
 Cada app lê a variável `API_URL` para saber onde está o backend.
